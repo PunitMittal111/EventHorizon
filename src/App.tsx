@@ -1,107 +1,126 @@
-import React, { useState } from 'react';
-import { AuthProvider, useAuth } from './context/AuthContext';
-import LoginForm from './components/Auth/LoginForm';
-import Navbar from './components/Layout/Navbar';
-import Sidebar from './components/Layout/Sidebar';
-import DashboardOverview from './components/Dashboard/DashboardOverview';
-import EventList from './components/Events/EventList';
-import VenueManager from './components/Events/VenueManager';
-import EventWorkflow from './components/Events/EventWorkflow';
-import AdvancedTicketManagement from './components/Tickets/AdvancedTicketManagement';
-import AnalyticsDashboard from './components/Analytics/AnalyticsDashboard';
-import BrandingSettings from './components/Settings/BrandingSettings';
-import { Event } from './types';
+import React, { Suspense } from "react";
+import { Routes, Route, useLocation } from "react-router-dom";
+import { AuthProvider } from "./context/AuthContext";
+import ProtectedRoute from "./components/Auth/ProtectedRouter";
+import Navbar from "./components/Layout/Navbar";
+import Sidebar from "./components/Layout/Sidebar";
+import LoginForm from "./components/Auth/LoginForm";
+import RegisterForm from "./components/Auth/RegisterForm";
 
-const MainApp: React.FC = () => {
-  const { user, isLoading } = useAuth();
-  const [activeTab, setActiveTab] = useState('dashboard');
-  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
-  const [events, setEvents] = useState<Event[]>([]);
+const DashboardPage = React.lazy(
+  () => import("./components/Dashboard/DashboardOverview")
+);
+const EventListPage = React.lazy(() => import("./components/Events/EventList"));
+const VenueManagerPage = React.lazy(
+  () => import("./components/Events/VenueManager")
+);
+const EventWorkflow = React.lazy(
+  () => import("./components/Events/EventWorkflow")
+);
+const TicketManagementPage = React.lazy(
+  () => import("./components/Tickets/TicketManagement")
+);
+const AnalyticsPage = React.lazy(
+  () => import("./components/Analytics/AnalyticsDashboard")
+);
+const BrandingSettingsPage = React.lazy(
+  () => import("./components/Settings/BrandingSettings")
+);
 
-  const handleEventStatusChange = (eventId: string, status: Event['status']) => {
-    setEvents(prevEvents => 
-      prevEvents.map(event => 
-        event.id === eventId 
-          ? { ...event, status, updatedAt: new Date() }
-          : event
-      )
-    );
-  };
-
-  if (isLoading) {
-    return (
-      <div className="min-h-screen bg-gray-100 flex items-center justify-center">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-indigo-600 mx-auto"></div>
-          <p className="mt-4 text-gray-600">Loading...</p>
-        </div>
-      </div>
-    );
-  }
-
-  if (!user) {
-    return <LoginForm />;
-  }
-
-  const renderContent = () => {
-    switch (activeTab) {
-      case 'dashboard':
-        return <DashboardOverview />;
-      case 'events':
-        return <EventList />;
-      case 'venues':
-        return <VenueManager />;
-      case 'workflow':
-        return <EventWorkflow events={events} onStatusChange={handleEventStatusChange} />;
-      case 'tickets':
-        return <AdvancedTicketManagement />;
-      case 'analytics':
-        return <AnalyticsDashboard />;
-      case 'attendees':
-        return <div className="p-6 text-center text-gray-500">Attendees management coming soon...</div>;
-      case 'branding':
-        return <BrandingSettings />;
-      case 'billing':
-        return <div className="p-6 text-center text-gray-500">Billing management coming soon...</div>;
-      case 'integrations':
-        return <div className="p-6 text-center text-gray-500">Integrations coming soon...</div>;
-      case 'settings':
-        return <div className="p-6 text-center text-gray-500">Settings coming soon...</div>;
-      default:
-        return <DashboardOverview />;
-    }
-  };
+function AppContent() {
+  const location = useLocation();
+  const hideLayout =
+    location.pathname === "/" || location.pathname === "/register";
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      <Navbar 
-        onMenuToggle={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-        isMobileMenuOpen={isMobileMenuOpen}
-      />
-      
+    <>
+      {!hideLayout && <Navbar />}
       <div className="flex">
-        <Sidebar 
-          activeTab={activeTab}
-          onTabChange={setActiveTab}
-          isMobileMenuOpen={isMobileMenuOpen}
-        />
-        
-        <div className="flex-1 overflow-auto">
-          <main className="p-6">
-            {renderContent()}
-          </main>
+        {!hideLayout && <Sidebar />}
+        <div className="flex-1 overflow-auto bg-gray-50 p-6">
+          <Suspense
+            fallback={
+              <div className="min-h-screen flex items-center justify-center">
+                <div className="animate-pulse text-indigo-600">Loading...</div>
+              </div>
+            }
+          >
+            <Routes>
+              {/* Public Routes */}
+              <Route path="/" element={<LoginForm />} />
+              <Route path="/register" element={<RegisterForm />} />
+
+              {/* Protected Routes */}
+              <Route
+                path="/dashboard"
+                element={
+                  <ProtectedRoute>
+                    <DashboardPage />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/events"
+                element={
+                  <ProtectedRoute>
+                    <EventListPage />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/venues"
+                element={
+                  <ProtectedRoute>
+                    <VenueManagerPage />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/workflow"
+                element={
+                  <ProtectedRoute>
+                    <EventWorkflow />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/tickets"
+                element={
+                  <ProtectedRoute>
+                    <TicketManagementPage />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/analytics"
+                element={
+                  <ProtectedRoute>
+                    <AnalyticsPage />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/branding"
+                element={
+                  <ProtectedRoute>
+                    <BrandingSettingsPage />
+                  </ProtectedRoute>
+                }
+              />
+            </Routes>
+          </Suspense>
         </div>
       </div>
-    </div>
+    </>
   );
-};
+}
 
-const App: React.FC = () => {
+function App() {
   return (
     <AuthProvider>
-      <MainApp />
+      <AppContent />
     </AuthProvider>
   );
-};
+}
 
 export default App;
