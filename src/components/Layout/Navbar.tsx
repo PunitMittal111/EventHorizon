@@ -1,6 +1,7 @@
-import React, { useState } from 'react';
-import { Calendar, Menu, X, User, Settings, LogOut, Bell } from 'lucide-react';
-import { useAuth } from '../../context/AuthContext';
+import React, { useState, useRef, useEffect } from "react";
+import { Calendar, Menu, X, User, Settings, LogOut, Bell } from "lucide-react";
+import { useAuth } from "../../context/AuthContext";
+import { useNavigate } from "react-router-dom";
 
 interface NavbarProps {
   onMenuToggle: () => void;
@@ -9,7 +10,46 @@ interface NavbarProps {
 
 const Navbar: React.FC<NavbarProps> = ({ onMenuToggle, isMobileMenuOpen }) => {
   const { user, organization, logout } = useAuth();
+  const navigate = useNavigate();
   const [isProfileMenuOpen, setIsProfileMenuOpen] = useState(false);
+  const profileMenuRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (
+        profileMenuRef.current &&
+        !profileMenuRef.current.contains(event.target as Node)
+      ) {
+        setIsProfileMenuOpen(false);
+      }
+    };
+
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, []);
+
+  const handleLogout = async () => {
+    try {
+      setIsProfileMenuOpen(false);
+
+      await logout();
+      navigate("/", { replace: true });
+    } catch (error) {
+      console.error("Logout failed:", error);
+    }
+  };
+
+  const handleProfileClick = () => {
+    setIsProfileMenuOpen(false);
+    navigate("/profile");
+  };
+
+  const handleSettingsClick = () => {
+    setIsProfileMenuOpen(false);
+    navigate("/settings");
+  };
 
   return (
     <nav className="bg-white border-b border-gray-200 sticky top-0 z-50">
@@ -26,7 +66,7 @@ const Navbar: React.FC<NavbarProps> = ({ onMenuToggle, isMobileMenuOpen }) => {
                 <Menu className="h-6 w-6" />
               )}
             </button>
-            
+
             <div className="flex items-center ml-4 lg:ml-0">
               <div className="flex-shrink-0 flex items-center">
                 <Calendar className="h-8 w-8 text-indigo-600" />
@@ -34,7 +74,7 @@ const Navbar: React.FC<NavbarProps> = ({ onMenuToggle, isMobileMenuOpen }) => {
                   EventHorizon
                 </span>
               </div>
-              
+
               {organization && (
                 <div className="ml-4 pl-4 border-l border-gray-200">
                   <span className="text-sm font-medium text-gray-900">
@@ -53,40 +93,44 @@ const Navbar: React.FC<NavbarProps> = ({ onMenuToggle, isMobileMenuOpen }) => {
               <Bell className="h-6 w-6" />
             </button>
 
-            <div className="relative">
+            <div className="relative" ref={profileMenuRef}>
               <button
                 onClick={() => setIsProfileMenuOpen(!isProfileMenuOpen)}
                 className="flex items-center space-x-3 text-sm rounded-full focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2"
               >
                 <img
                   className="h-8 w-8 rounded-full"
-                  src={user?.avatar || 'https://images.pexels.com/photos/2379004/pexels-photo-2379004.jpeg?auto=compress&cs=tinysrgb&w=100&h=100&dpr=1'}
+                  src={
+                    user?.avatar ||
+                    "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=facearea&facepad=2&w=256&h=256&q=80"
+                  }
                   alt="Profile"
                 />
                 <span className="hidden md:block font-medium text-gray-900">
-                  {user?.name}
+                  {user?.name || "User"}
                 </span>
               </button>
 
               {isProfileMenuOpen && (
-                <div className="absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg py-1 z-50">
-                  <a
-                    href="#"
-                    className="flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                <div className="absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg py-1 z-50 border border-gray-200">
+                  <button
+                    onClick={handleProfileClick}
+                    className="flex items-center w-full px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 transition-colors duration-150"
                   >
                     <User className="h-4 w-4 mr-3" />
                     Profile
-                  </a>
-                  <a
-                    href="#"
-                    className="flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                  </button>
+                  <button
+                    onClick={handleSettingsClick}
+                    className="flex items-center w-full px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 transition-colors duration-150"
                   >
                     <Settings className="h-4 w-4 mr-3" />
                     Settings
-                  </a>
+                  </button>
+                  <hr className="my-1 border-gray-200" />
                   <button
-                    onClick={logout}
-                    className="flex items-center w-full px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                    onClick={handleLogout}
+                    className="flex items-center w-full px-4 py-2 text-sm text-red-700 hover:bg-red-50 transition-colors duration-150"
                   >
                     <LogOut className="h-4 w-4 mr-3" />
                     Sign out
