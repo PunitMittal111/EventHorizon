@@ -30,7 +30,7 @@ const LoginForm: React.FC<LoginFormProps> = ({ switchToRegister }) => {
   };
 
   useEffect(() => {
-    if (user) {
+    if (!user && !loading) {
       navigate("/dashboard");
     }
   }, [user, navigate]);
@@ -108,7 +108,7 @@ const LoginForm: React.FC<LoginFormProps> = ({ switchToRegister }) => {
                 <span className="ml-2 text-sm text-gray-600">Remember me</span>
               </label>
               <Link
-                to="/forgot-password"
+                to="/"
                 className="text-sm text-indigo-600 hover:text-indigo-800"
               >
                 Forgot password?
