@@ -1,4 +1,7 @@
 import React, { useState } from 'react';
+import { useSelector, useDispatch } from 'react-redux';
+import { RootState, AppDispatch } from '../../app/store';
+import { fetchEvents, createEvent } from '../../features/eventSlice';
 import { 
   Calendar, 
   MapPin, 
@@ -241,6 +244,32 @@ const EventList: React.FC = () => {
     setShowCreateModal(false);
   };
 
+  // Helper function to safely format date
+  const formatDate = (date: Date | string | undefined): string => {
+    if (!date) return 'TBD';
+    
+    try {
+      const dateObj = typeof date === 'string' ? new Date(date) : date;
+      if (isNaN(dateObj.getTime())) return 'Invalid Date';
+      return dateObj.toLocaleDateString();
+    } catch (error) {
+      return 'Invalid Date';
+    }
+  };
+
+  // Helper function to safely format time
+  const formatTime = (date: Date | string | undefined): string => {
+    if (!date) return 'TBD';
+    
+    try {
+      const dateObj = typeof date === 'string' ? new Date(date) : date;
+      if (isNaN(dateObj.getTime())) return 'Invalid Time';
+      return dateObj.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+    } catch (error) {
+      return 'Invalid Time';
+    }
+  };
+
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
@@ -402,7 +431,7 @@ const EventList: React.FC = () => {
                 <div className="space-y-2 mb-4">
                   <div className="flex items-center text-sm text-gray-500">
                     <Calendar className="h-4 w-4 mr-2" />
-                    {event.startDate.toLocaleDateString()} at {event.startDate.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                    {formatDate(event.startDate)} at {formatTime(event.startDate)}
                   </div>
                   
                   <div className="flex items-center text-sm text-gray-500">
