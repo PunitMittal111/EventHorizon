@@ -2,6 +2,9 @@ import React, { useState, useRef, useEffect } from "react";
 import { Calendar, Menu, X, User, Settings, LogOut, Bell } from "lucide-react";
 import { useAuth } from "../../context/AuthContext";
 import { useNavigate } from "react-router-dom";
+import { logout } from "../../features/authSlice";
+import { useSelector, useDispatch } from "react-redux";
+import { RootState } from "../../app/store";
 
 interface NavbarProps {
   onMenuToggle: () => void;
@@ -9,10 +12,12 @@ interface NavbarProps {
 }
 
 const Navbar: React.FC<NavbarProps> = ({ onMenuToggle, isMobileMenuOpen }) => {
-  const { user, organization, logout } = useAuth();
+  const user = useSelector((state: RootState) => state.auth.user);
+  const { organization } = useAuth();
   const navigate = useNavigate();
   const [isProfileMenuOpen, setIsProfileMenuOpen] = useState(false);
   const profileMenuRef = useRef<HTMLDivElement>(null);
+  const dispatch = useDispatch();
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
@@ -34,7 +39,7 @@ const Navbar: React.FC<NavbarProps> = ({ onMenuToggle, isMobileMenuOpen }) => {
     try {
       setIsProfileMenuOpen(false);
 
-      await logout();
+      dispatch(logout());
       navigate("/", { replace: true });
     } catch (error) {
       console.error("Logout failed:", error);
@@ -107,7 +112,7 @@ const Navbar: React.FC<NavbarProps> = ({ onMenuToggle, isMobileMenuOpen }) => {
                   alt="Profile"
                 />
                 <span className="hidden md:block font-medium text-gray-900">
-                  {user?.name || "User"}
+                  {user ? user.name : "User"}
                 </span>
               </button>
 

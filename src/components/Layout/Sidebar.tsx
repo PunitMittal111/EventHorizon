@@ -43,7 +43,6 @@ const Sidebar: React.FC<SidebarProps> = ({ isMobileMenuOpen }) => {
       icon: Zap,
       path: "/integrations",
     },
-    { id: "settings", label: "Settings", icon: Settings, path: "/settings" },
   ];
 
   const handleNavigation = (path: string) => {
