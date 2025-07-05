@@ -12,10 +12,10 @@ const DashboardPage = React.lazy(
 );
 const EventListPage = React.lazy(() => import("./components/Events/EventList"));
 const VenueManagerPage = React.lazy(
-  () => import("./components/Events/VenueManager")
+  () => import("./components/Venue/VenueManager")
 );
 const EventWorkflow = React.lazy(
-  () => import("./components/Events/EventWorkflow")
+  () => import("./components/Workflow/EventWorkflow")
 );
 const TicketManagementPage = React.lazy(
   () => import("./components/Tickets/TicketManagement")
@@ -24,7 +24,7 @@ const AnalyticsPage = React.lazy(
   () => import("./components/Analytics/AnalyticsDashboard")
 );
 const BrandingSettingsPage = React.lazy(
-  () => import("./components/Settings/BrandingSettings")
+  () => import("./components/Branding/BrandingSettings")
 );
 
 function AppContent() {
