@@ -10,7 +10,7 @@ function ProtectedRoute({ children }: ProtectedRouteProps) {
   const { isAuthenticated, isLoading } = useAppSelector((state) => state.auth);
   const location = useLocation();
 
-  if (isLoading) {
+  if (isLoading || isAuthenticated === null) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gray-50 dark:bg-gray-900">
         <div className="animate-pulse flex flex-col items-center">
