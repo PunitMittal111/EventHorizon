@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { useNavigate, Link } from "react-router-dom";
 import { Mail, Lock, Eye, EyeOff, Calendar } from "lucide-react";
@@ -17,9 +17,7 @@ const LoginForm: React.FC<LoginFormProps> = ({ switchToRegister }) => {
   const dispatch = useDispatch<AppDispatch>();
   const navigate = useNavigate();
 
-  const { loading, error, user } = useSelector(
-    (state: RootState) => state.auth
-  );
+  const { loading, error } = useSelector((state: RootState) => state.auth);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -28,12 +26,6 @@ const LoginForm: React.FC<LoginFormProps> = ({ switchToRegister }) => {
       navigate("/dashboard");
     }
   };
-
-  useEffect(() => {
-    if (!user && !loading) {
-      navigate("/dashboard");
-    }
-  }, [user, navigate]);
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-indigo-50 via-white to-purple-50 flex items-center justify-center p-4">
