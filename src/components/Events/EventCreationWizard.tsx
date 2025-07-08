@@ -1,33 +1,28 @@
 import React, { useState } from "react";
 import {
-  Calendar,
   MapPin,
   Globe,
   Users,
   Image,
-  Settings,
   Save,
   Eye,
   ArrowLeft,
   ArrowRight,
   Clock,
-  Tag,
   Camera,
   Link,
   CheckCircle,
 } from "lucide-react";
-import { Event, Venue, EventCategory } from "../../types";
-import { useAppDispatch, useAppSelector } from "../../hooks/hook";
+import { Event, EventCategory } from "../../types";
+import { useAppDispatch } from "../../hooks/hook";
 import { createEvent } from "../../features/eventSlice";
 
 interface EventCreationWizardProps {
   onClose: () => void;
-  // onSave: (event: Partial<Event>) => void;
 }
 
 const EventCreationWizard: React.FC<EventCreationWizardProps> = ({
   onClose,
-  // onSave,
 }) => {
   const dispatch = useAppDispatch();
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -40,6 +35,15 @@ const EventCreationWizard: React.FC<EventCreationWizardProps> = ({
     status: "draft",
     visibility: "public",
     timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
+    venue: {
+      name: "",
+      address: "",
+      city: "",
+      state: "",
+      country: "",
+      zipCode: "",
+      capacity: 0,
+    },
     settings: {
       allowWaitlist: true,
       requireApproval: false,
@@ -157,12 +161,9 @@ const EventCreationWizard: React.FC<EventCreationWizardProps> = ({
           status,
         })
       ).unwrap();
-
-      // toast.success("Event created successfully!");
       onClose();
     } catch (error) {
       console.error("Error creating event:", error);
-      // toast.error("Failed to create event. Please try again.");
     } finally {
       setIsSubmitting(false);
     }
@@ -384,6 +385,16 @@ const EventCreationWizard: React.FC<EventCreationWizardProps> = ({
                   </label>
                   <input
                     type="text"
+                    value={eventData.venue?.name || ""}
+                    onChange={(e) =>
+                      setEventData({
+                        ...eventData,
+                        venue: {
+                          ...eventData.venue,
+                          name: e.target.value,
+                        },
+                      })
+                    }
                     className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
                     placeholder="Convention Center, Hotel, etc."
                   />
@@ -395,6 +406,16 @@ const EventCreationWizard: React.FC<EventCreationWizardProps> = ({
                   </label>
                   <input
                     type="text"
+                    value={eventData.venue?.address || ""}
+                    onChange={(e) =>
+                      setEventData({
+                        ...eventData,
+                        venue: {
+                          ...eventData.venue,
+                          address: e.target.value,
+                        },
+                      })
+                    }
                     className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
                     placeholder="Street address"
                   />
@@ -407,6 +428,16 @@ const EventCreationWizard: React.FC<EventCreationWizardProps> = ({
                     </label>
                     <input
                       type="text"
+                      value={eventData.venue?.city || ""}
+                      onChange={(e) =>
+                        setEventData({
+                          ...eventData,
+                          venue: {
+                            ...eventData.venue,
+                            city: e.target.value,
+                          },
+                        })
+                      }
                       className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
                       placeholder="City"
                     />
@@ -417,6 +448,16 @@ const EventCreationWizard: React.FC<EventCreationWizardProps> = ({
                     </label>
                     <input
                       type="text"
+                      value={eventData.venue?.state || ""}
+                      onChange={(e) =>
+                        setEventData({
+                          ...eventData,
+                          venue: {
+                            ...eventData.venue,
+                            state: e.target.value,
+                          },
+                        })
+                      }
                       className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
                       placeholder="State or Province"
                     />
@@ -428,7 +469,19 @@ const EventCreationWizard: React.FC<EventCreationWizardProps> = ({
                     <label className="block text-sm font-medium text-gray-700 mb-2">
                       Country *
                     </label>
-                    <select className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500">
+                    <select
+                      value={eventData.venue?.country || ""}
+                      onChange={(e) =>
+                        setEventData({
+                          ...eventData,
+                          venue: {
+                            ...eventData.venue,
+                            country: e.target.value,
+                          },
+                        })
+                      }
+                      className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+                    >
                       <option value="">Select Country</option>
                       <option value="US">United States</option>
                       <option value="CA">Canada</option>
@@ -443,6 +496,16 @@ const EventCreationWizard: React.FC<EventCreationWizardProps> = ({
                     </label>
                     <input
                       type="text"
+                      value={eventData.venue?.zipCode || ""}
+                      onChange={(e) =>
+                        setEventData({
+                          ...eventData,
+                          venue: {
+                            ...eventData.venue,
+                            zipCode: e.target.value,
+                          },
+                        })
+                      }
                       className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
                       placeholder="ZIP or Postal Code"
                     />
@@ -455,11 +518,14 @@ const EventCreationWizard: React.FC<EventCreationWizardProps> = ({
                   </label>
                   <input
                     type="number"
-                    value={eventData.maxAttendees || ""}
+                    value={eventData.venue?.capacity || ""}
                     onChange={(e) =>
                       setEventData({
                         ...eventData,
-                        maxAttendees: parseInt(e.target.value),
+                        venue: {
+                          ...eventData.venue,
+                          capacity: parseInt(e.target.value) || 0,
+                        },
                       })
                     }
                     className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
@@ -778,10 +844,59 @@ const EventCreationWizard: React.FC<EventCreationWizardProps> = ({
                     {eventData.eventType}
                   </span>
                 </div>
+
+                {(eventData.eventType === "in-person" ||
+                  eventData.eventType === "hybrid") &&
+                  eventData.venue && (
+                    <>
+                      <div className="flex justify-between">
+                        <span className="text-gray-600">Venue:</span>
+                        <span className="font-medium">
+                          {eventData.venue.name || "Not specified"}
+                        </span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span className="text-gray-600">Address:</span>
+                        <span className="font-medium text-right">
+                          {[
+                            eventData.venue.address,
+                            eventData.venue.city,
+                            eventData.venue.state,
+                            eventData.venue.country,
+                            eventData.venue.zipCode,
+                          ]
+                            .filter(Boolean)
+                            .join(", ")}
+                        </span>
+                      </div>
+                      {eventData.venue.capacity && (
+                        <div className="flex justify-between">
+                          <span className="text-gray-600">Capacity:</span>
+                          <span className="font-medium">
+                            {eventData.venue.capacity > 0
+                              ? eventData.venue.capacity
+                              : "Not specified"}
+                          </span>
+                        </div>
+                      )}
+                    </>
+                  )}
+
+                {(eventData.eventType === "virtual" ||
+                  eventData.eventType === "hybrid") &&
+                  eventData.virtualEventUrl && (
+                    <div className="flex justify-between">
+                      <span className="text-gray-600">Virtual URL:</span>
+                      <span className="font-medium break-all text-right">
+                        {eventData.virtualEventUrl}
+                      </span>
+                    </div>
+                  )}
+
                 <div className="flex justify-between">
                   <span className="text-gray-600">Category:</span>
                   <span className="font-medium">
-                    {eventData.category?.name}
+                    {eventData.category?.name || "Not specified"}
                   </span>
                 </div>
                 <div className="flex justify-between">
@@ -794,7 +909,38 @@ const EventCreationWizard: React.FC<EventCreationWizardProps> = ({
                   <div className="flex justify-between">
                     <span className="text-gray-600">Start Date:</span>
                     <span className="font-medium">
-                      {new Date(eventData.startDate).toLocaleDateString()}
+                      {new Date(eventData.startDate).toLocaleString("en-US", {
+                        year: "numeric",
+                        month: "long",
+                        day: "numeric",
+                        hour: "2-digit",
+                        minute: "2-digit",
+                        timeZone: eventData.timezone,
+                      })}{" "}
+                      ({eventData.timezone})
+                    </span>
+                  </div>
+                )}
+                {eventData.endDate && (
+                  <div className="flex justify-between">
+                    <span className="text-gray-600">End Date:</span>
+                    <span className="font-medium">
+                      {new Date(eventData.endDate).toLocaleString("en-US", {
+                        year: "numeric",
+                        month: "long",
+                        day: "numeric",
+                        hour: "2-digit",
+                        minute: "2-digit",
+                        timeZone: eventData.timezone,
+                      })}
+                    </span>
+                  </div>
+                )}
+                {eventData.customTags && eventData.customTags.length > 0 && (
+                  <div className="flex justify-between">
+                    <span className="text-gray-600">Tags:</span>
+                    <span className="font-medium">
+                      {eventData.customTags.join(", ")}
                     </span>
                   </div>
                 )}
@@ -813,7 +959,6 @@ const EventCreationWizard: React.FC<EventCreationWizardProps> = ({
             </div>
           </div>
         );
-
       default:
         return null;
     }
