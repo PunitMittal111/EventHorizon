@@ -55,9 +55,9 @@ const Sidebar: React.FC<SidebarProps> = ({ isMobileMenuOpen }) => {
         isMobileMenuOpen ? "block" : "hidden"
       } lg:block lg:flex-shrink-0`}
     >
-      <div className="flex flex-col w-64 bg-white border-r border-gray-200 h-screen overflow-y-auto">
+      <div className=" flex flex-col w-64 bg-white border-r border-gray-200 h-screen">
         <div className="flex-1 px-3 py-4">
-          <nav className="space-y-1">
+          <nav className="space-y-1 fixed">
             {menuItems.map((item) => {
               const Icon = item.icon;
               const isActive = location.pathname === item.path;

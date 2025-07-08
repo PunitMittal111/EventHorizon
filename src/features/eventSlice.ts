@@ -8,6 +8,7 @@ interface EventState {
   error: string | null;
   createLoading: boolean;
   createError: string | null;
+  selectedEvent: Event | null;
 }
 
 const initialState: EventState = {
@@ -16,6 +17,7 @@ const initialState: EventState = {
   error: null,
   createLoading: false,
   createError: null,
+  selectedEvent: null,
 };
 
 const API_URL = "http://localhost:5000";
@@ -85,6 +87,27 @@ export const getAllEvents = createAsyncThunk(
   }
 );
 
+export const getEventById = createAsyncThunk(
+  "events/getById",
+  async (id: string, { rejectWithValue }) => {
+    const token = localStorage.getItem("token");
+    try {
+      const res = await axios.get(`${API_URL}/api/events/${id}`, {
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+      });
+      return res.data as Event;
+    } catch (error: any) {
+      console.log("Get event by id error:", error);
+      return rejectWithValue(
+        error.response?.data?.message || "Failed to fetch event"
+      );
+    }
+  }
+);
+
 const eventSlice = createSlice({
   name: "events",
   initialState,
@@ -125,6 +148,23 @@ const eventSlice = createSlice({
       .addCase(getAllEvents.rejected, (state, action) => {
         state.loading = false;
         state.error = (action.payload as string) || "Failed to fetch events";
+      })
+
+      .addCase(getEventById.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+        state.selectedEvent = null;
+      })
+      .addCase(
+        getEventById.fulfilled,
+        (state, action: PayloadAction<Event>) => {
+          state.loading = false;
+          state.selectedEvent = action.payload;
+        }
+      )
+      .addCase(getEventById.rejected, (state, action) => {
+        state.loading = false;
+        state.error = (action.payload as string) || "Failed to fetch event";
       });
   },
 });
