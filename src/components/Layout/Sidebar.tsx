@@ -1,18 +1,6 @@
 import React from "react";
 import { useNavigate, useLocation } from "react-router-dom";
-import {
-  Home,
-  Calendar,
-  Ticket,
-  BarChart3,
-  Settings,
-  CreditCard,
-  Users,
-  Palette,
-  Zap,
-  MapPin,
-  GitBranch,
-} from "lucide-react";
+import { Home, Calendar, Ticket, CreditCard } from "lucide-react";
 
 interface SidebarProps {
   isMobileMenuOpen: boolean;
