@@ -11,20 +11,8 @@ const DashboardPage = React.lazy(
   () => import("./components/Dashboard/DashboardOverview")
 );
 const EventListPage = React.lazy(() => import("./components/Events/EventList"));
-const VenueManagerPage = React.lazy(
-  () => import("./components/Venue/VenueManager")
-);
-const EventWorkflow = React.lazy(
-  () => import("./components/Workflow/EventWorkflow")
-);
 const TicketManagementPage = React.lazy(
   () => import("./components/Tickets/TicketManagement")
-);
-const AnalyticsPage = React.lazy(
-  () => import("./components/Analytics/AnalyticsDashboard")
-);
-const BrandingSettingsPage = React.lazy(
-  () => import("./components/Branding/BrandingSettings")
 );
 
 function AppContent() {
@@ -46,11 +34,9 @@ function AppContent() {
             }
           >
             <Routes>
-              {/* Public Routes */}
               <Route path="/" element={<LoginForm />} />
               <Route path="/register" element={<RegisterForm />} />
 
-              {/* Protected Routes */}
               <Route
                 path="/dashboard"
                 element={
@@ -68,42 +54,10 @@ function AppContent() {
                 }
               />
               <Route
-                path="/venues"
-                element={
-                  <ProtectedRoute>
-                    <VenueManagerPage />
-                  </ProtectedRoute>
-                }
-              />
-              <Route
-                path="/workflow"
-                element={
-                  <ProtectedRoute>
-                    <EventWorkflow />
-                  </ProtectedRoute>
-                }
-              />
-              <Route
                 path="/tickets"
                 element={
                   <ProtectedRoute>
                     <TicketManagementPage />
-                  </ProtectedRoute>
-                }
-              />
-              <Route
-                path="/analytics"
-                element={
-                  <ProtectedRoute>
-                    <AnalyticsPage />
-                  </ProtectedRoute>
-                }
-              />
-              <Route
-                path="/branding"
-                element={
-                  <ProtectedRoute>
-                    <BrandingSettingsPage />
                   </ProtectedRoute>
                 }
               />
