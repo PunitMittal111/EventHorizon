@@ -1,6 +1,5 @@
 import { createSlice, createAsyncThunk, PayloadAction } from "@reduxjs/toolkit";
 import axios from "axios";
-import { Event } from "../types";
 
 interface EventState {
   events: Event[];
@@ -40,9 +39,9 @@ export const createEvent = createAsyncThunk(
       return response?.data;
     } catch (error: any) {
       console.log("Create event error:", error);
-        return rejectWithValue(
-          error.response?.data?.message || "Failed to create event"
-        );
+      return rejectWithValue(
+        error.response?.data?.message || "Failed to create event"
+      );
     }
   }
 );
@@ -75,9 +74,9 @@ export const getAllEvents = createAsyncThunk(
       return res.data as Event[];
     } catch (error: any) {
       console.log("Get all events error:", error);
-        return rejectWithValue(
-          error.response?.data?.message || "Failed to fetch events"
-        );
+      return rejectWithValue(
+        error.response?.data?.message || "Failed to fetch events"
+      );
     }
   }
 );
@@ -96,9 +95,9 @@ export const getEventById = createAsyncThunk(
       return res.data as Event;
     } catch (error: any) {
       console.log("Get event by id error:", error);
-        return rejectWithValue(
-          error.response?.data?.message || "Failed to fetch event"
-        );
+      return rejectWithValue(
+        error.response?.data?.message || "Failed to fetch event"
+      );
     }
   }
 );
@@ -165,10 +164,13 @@ const eventSlice = createSlice({
         state.loading = true;
         state.error = null;
       })
-      .addCase(getAllEvents.fulfilled, (state, action: PayloadAction<Event[]>) => {
-        state.loading = false;
-        state.events = mergeEvents(action.payload);
-      })
+      .addCase(
+        getAllEvents.fulfilled,
+        (state, action: PayloadAction<Event[]>) => {
+          state.loading = false;
+          state.events = mergeEvents(action.payload);
+        }
+      )
       .addCase(getAllEvents.rejected, (state, action) => {
         state.loading = false;
         state.error = action.payload as string;
@@ -179,10 +181,13 @@ const eventSlice = createSlice({
         state.error = null;
         state.selectedEvent = null;
       })
-      .addCase(getEventById.fulfilled, (state, action: PayloadAction<Event>) => {
-        state.loading = false;
-        state.selectedEvent = action.payload;
-      })
+      .addCase(
+        getEventById.fulfilled,
+        (state, action: PayloadAction<Event>) => {
+          state.loading = false;
+          state.selectedEvent = action.payload;
+        }
+      )
       .addCase(getEventById.rejected, (state, action) => {
         state.loading = false;
         state.error = action.payload as string;

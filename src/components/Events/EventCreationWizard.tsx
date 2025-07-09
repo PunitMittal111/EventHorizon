@@ -658,11 +658,18 @@ const EventCreationWizard: React.FC<EventCreationWizardProps> = ({
                     if (files && files.length > 0) {
                       try {
                         setGalleryError("");
-                        const uploadPromises = Array.from(files).map((file) => uploadImage(file));
+                        const uploadPromises = Array.from(files).map((file) =>
+                          uploadImage(file)
+                        );
                         const uploadedUrls = await Promise.all(uploadPromises);
-                        setEventData((prev) => ({ ...prev, galleryImages: uploadedUrls }));
+                        setEventData((prev) => ({
+                          ...prev,
+                          galleryImages: uploadedUrls,
+                        }));
                       } catch {
-                        setGalleryError("Gallery image upload failed. Please try again.");
+                        setGalleryError(
+                          "Gallery image upload failed. Please try again."
+                        );
                       }
                     }
                   }}
@@ -673,20 +680,23 @@ const EventCreationWizard: React.FC<EventCreationWizardProps> = ({
                   </span>
                 </label>
                 {/* Gallery Previews */}
-                {eventData.galleryImages && eventData.galleryImages.length > 0 && (
-                  <div className="flex flex-wrap gap-2 mt-4 justify-center">
-                    {eventData.galleryImages.map((img, idx) => (
-                      <img
-                        key={img + idx}
-                        src={img}
-                        alt={`Gallery Preview ${idx + 1}`}
-                        className="rounded-lg max-h-24 object-contain border"
-                      />
-                    ))}
-                  </div>
-                )}
+                {eventData.galleryImages &&
+                  eventData.galleryImages.length > 0 && (
+                    <div className="flex flex-wrap gap-2 mt-4 justify-center">
+                      {eventData.galleryImages.map((img, idx) => (
+                        <img
+                          key={img + idx}
+                          src={img}
+                          alt={`Gallery Preview ${idx + 1}`}
+                          className="rounded-lg max-h-24 object-contain border"
+                        />
+                      ))}
+                    </div>
+                  )}
                 {galleryError && (
-                  <div className="text-red-600 text-sm mt-2">{galleryError}</div>
+                  <div className="text-red-600 text-sm mt-2">
+                    {galleryError}
+                  </div>
                 )}
               </div>
             </div>

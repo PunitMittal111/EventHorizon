@@ -198,14 +198,15 @@ const EventList: React.FC = () => {
                   </span>
                   <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-white text-gray-800">
                     <TypeIcon className="h-3 w-3 mr-1" />
-                    {event.eventType }
+                    {event.eventType}
                   </span>
                 </div>
               </div>
 
               <div className="flex items-center justify-between px-6">
                 <div className="flex items-center space-x-1 flex-wrap">
-                  {Array.isArray(event.category) && event.category.length > 0 ? (
+                  {Array.isArray(event.category) &&
+                  event.category.length > 0 ? (
                     event.category.map((cat, idx) => (
                       <div
                         key={cat._id ?? cat.name ?? idx}
@@ -292,14 +293,19 @@ const EventList: React.FC = () => {
                         ? "bg-yellow-100 text-yellow-800"
                         : "bg-red-100 text-red-800"
                     }`}
-                    aria-label={`${Math.round(attendancePercentage)} percent attendance`}
+                    aria-label={`${Math.round(
+                      attendancePercentage
+                    )} percent attendance`}
                   >
                     {Math.round(attendancePercentage)}%
                   </span>
                 </div>
 
                 {event.customTags && event.customTags.length > 0 && (
-                  <div className="flex flex-wrap gap-1 mb-4" aria-label="Custom tags">
+                  <div
+                    className="flex flex-wrap gap-1 mb-4"
+                    aria-label="Custom tags"
+                  >
                     <Tag className="h-4 w-4 mr-2 text-gray-400" />
                     {event.customTags.slice(0, 3).map((tag, idx) => (
                       <span
@@ -314,7 +320,10 @@ const EventList: React.FC = () => {
 
                 <div className="flex justify-between items-center">
                   <div className="flex space-x-3 text-sm text-gray-500">
-                    <div className="flex items-center" aria-label="Total revenue">
+                    <div
+                      className="flex items-center"
+                      aria-label="Total revenue"
+                    >
                       <DollarSign className="h-4 w-4" />
                       {event.analytics?.totalRevenue
                         ? event.analytics.totalRevenue.toLocaleString()
@@ -362,7 +371,9 @@ const EventList: React.FC = () => {
         <div className="text-center py-12 text-gray-500">No events found</div>
       )}
 
-      {showCreateModal && <EventCreationWizard onClose={() => setShowCreateModal(false)} />}
+      {showCreateModal && (
+        <EventCreationWizard onClose={() => setShowCreateModal(false)} />
+      )}
     </div>
   );
 };
