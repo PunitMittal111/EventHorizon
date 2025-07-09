@@ -148,8 +148,10 @@ const EventCreationWizard: React.FC<EventCreationWizardProps> = ({
       setCurrentStep(currentStep - 1);
     }
   };
+  const [galleryError, setGalleryError] = useState<string>("");
 
   const handleSave = async (status: "draft" | "published") => {
+    setGalleryError("");
     try {
       setIsSubmitting(true);
       await dispatch(
@@ -158,6 +160,7 @@ const EventCreationWizard: React.FC<EventCreationWizardProps> = ({
           startDate: eventData.startDate?.toISOString(),
           endDate: eventData.endDate?.toISOString(),
           category: eventData.category ? [eventData.category] : [],
+          galleryImages: eventData.galleryImages,
           status,
         })
       ).unwrap();
@@ -641,34 +644,80 @@ const EventCreationWizard: React.FC<EventCreationWizardProps> = ({
           <div className="space-y-6">
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
-                Event Cover Image *
+                Gallery Images
               </label>
               <div className="border-2 border-dashed border-gray-300 rounded-lg p-8 text-center hover:border-gray-400 transition-colors">
-                <Camera className="h-12 w-12 text-gray-400 mx-auto mb-4" />
-                <p className="text-sm text-gray-600 mb-2">
-                  Upload your event cover image
-                </p>
-                <p className="text-xs text-gray-500 mb-4">
-                  Recommended: 1920x1080px, JPG or PNG, max 5MB
-                </p>
-                <button className="bg-indigo-600 text-white px-4 py-2 rounded-md hover:bg-indigo-700 transition-colors">
-                  Choose File
-                </button>
+                <input
+                  type="file"
+                  accept="image/*"
+                  multiple
+                  className="hidden"
+                  id="event-gallery-upload"
+                  onChange={async (e) => {
+                    const files = e.target.files;
+                    if (files && files.length > 0) {
+                      try {
+                        setGalleryError("");
+                        const uploadPromises = Array.from(files).map((file) => uploadImage(file));
+                        const uploadedUrls = await Promise.all(uploadPromises);
+                        setEventData((prev) => ({ ...prev, galleryImages: uploadedUrls }));
+                      } catch {
+                        setGalleryError("Gallery image upload failed. Please try again.");
+                      }
+                    }
+                  }}
+                />
+                <label htmlFor="event-gallery-upload">
+                  <span className="bg-indigo-600 text-white px-4 py-2 rounded-md hover:bg-indigo-700 transition-colors cursor-pointer inline-block">
+                    Choose File(s)
+                  </span>
+                </label>
+                {/* Gallery Previews */}
+                {eventData.galleryImages && eventData.galleryImages.length > 0 && (
+                  <div className="flex flex-wrap gap-2 mt-4 justify-center">
+                    {eventData.galleryImages.map((img, idx) => (
+                      <img
+                        key={img + idx}
+                        src={img}
+                        alt={`Gallery Preview ${idx + 1}`}
+                        className="rounded-lg max-h-24 object-contain border"
+                      />
+                    ))}
+                  </div>
+                )}
+                {galleryError && (
+                  <div className="text-red-600 text-sm mt-2">{galleryError}</div>
+                )}
               </div>
             </div>
 
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
-                Event Gallery (Optional)
+                Event Cover Image (optional)
               </label>
-              <div className="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center hover:border-gray-400 transition-colors">
-                <Image className="h-8 w-8 text-gray-400 mx-auto mb-2" />
+              <div className="border-2 border-dashed border-gray-300 rounded-lg p-8 text-center hover:border-gray-400 transition-colors">
                 <p className="text-sm text-gray-600 mb-2">
-                  Add additional images to showcase your event
+                  Provide an image URL for your event cover image
                 </p>
-                <button className="text-indigo-600 hover:text-indigo-700 font-medium">
-                  Add Images
-                </button>
+                <p className="text-xs text-gray-500 mb-4">
+                  Recommended: 1920x1080px, JPG or PNG, max 5MB
+                </p>
+                <input
+                  type="url"
+                  placeholder="Paste image URL here (optional)"
+                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 mb-2"
+                  value={eventData.imageUrl || ""}
+                  onChange={(e) =>
+                    setEventData({ ...eventData, imageUrl: e.target.value })
+                  }
+                />
+                {eventData.imageUrl && (
+                  <img
+                    src={eventData.imageUrl}
+                    alt="Event Cover Preview"
+                    className="mx-auto mt-4 rounded-lg max-h-48 object-contain border"
+                  />
+                )}
               </div>
             </div>
 
@@ -1071,5 +1120,17 @@ const EventCreationWizard: React.FC<EventCreationWizardProps> = ({
     </div>
   );
 };
+
+async function uploadImage(file: File): Promise<string> {
+  const formData = new FormData();
+  formData.append("image", file);
+  const response = await fetch("/api/upload", {
+    method: "POST",
+    body: formData,
+  });
+  if (!response.ok) throw new Error("Image upload failed");
+  const data = await response.json();
+  return data.url;
+}
 
 export default EventCreationWizard;

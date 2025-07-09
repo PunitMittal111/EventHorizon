@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import {
   Calendar,
   MapPin,
@@ -18,28 +18,40 @@ import {
 import EventCreationWizard from "./EventCreationWizard";
 import { useAppDispatch, useAppSelector } from "../../hooks/hook";
 import { getAllEvents } from "../../features/eventSlice";
+const DEBOUNCE_DELAY = 300;
 
 const EventList: React.FC = () => {
   const dispatch = useAppDispatch();
-  const { events, loading, error } = useAppSelector((state) => state.events);
+  const { events, loading, error } = useAppSelector(
+    (state: any) => state.events
+  );
 
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
+  const [debouncedSearchTerm, setDebouncedSearchTerm] = useState("");
   const [statusFilter, setStatusFilter] = useState("all");
   const [typeFilter, setTypeFilter] = useState("all");
   const [showFilters, setShowFilters] = useState(false);
+  useEffect(() => {
+    const handler = setTimeout(() => {
+      setDebouncedSearchTerm(searchTerm);
+    }, DEBOUNCE_DELAY);
 
+    return () => {
+      clearTimeout(handler);
+    };
+  }, [searchTerm]);
   useEffect(() => {
     dispatch(
       getAllEvents({
         status: statusFilter,
         type: typeFilter,
-        search: searchTerm,
+        search: debouncedSearchTerm,
       })
     );
-  }, [dispatch, statusFilter, typeFilter, searchTerm]);
+  }, [dispatch, statusFilter, typeFilter, debouncedSearchTerm]);
 
-  const getStatusColor = (status: string) => {
+  const getStatusColor = useCallback((status: string) => {
     switch (status) {
       case "published":
         return "bg-green-100 text-green-800";
@@ -54,18 +66,20 @@ const EventList: React.FC = () => {
       default:
         return "bg-gray-100 text-gray-800";
     }
-  };
+  }, []);
 
-  const getTypeIcon = (type: string) => {
+  const getTypeIcon = useCallback((type: string) => {
     switch (type) {
       case "virtual":
         return Globe;
       case "hybrid":
         return Users;
+      case "in-person":
+        return MapPin;
       default:
         return MapPin;
     }
-  };
+  }, []);
 
   return (
     <div className="space-y-6">
@@ -77,6 +91,7 @@ const EventList: React.FC = () => {
         <button
           onClick={() => setShowCreateModal(true)}
           className="bg-indigo-600 text-white px-4 py-2 rounded-md hover:bg-indigo-700 transition-colors flex items-center space-x-2"
+          aria-label="Create Event"
         >
           <Plus className="h-4 w-4" />
           <span>Create Event</span>
@@ -86,13 +101,14 @@ const EventList: React.FC = () => {
       <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4">
         <div className="flex flex-col sm:flex-row gap-4">
           <div className="flex-1 relative">
-            <Search className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
+            <Search className="absolute left-3 top-3 h-4 w-4 text-gray-400 pointer-events-none" />
             <input
               type="text"
               placeholder="Search events..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
               className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
+              aria-label="Search events"
             />
           </div>
 
@@ -101,6 +117,7 @@ const EventList: React.FC = () => {
               value={statusFilter}
               onChange={(e) => setStatusFilter(e.target.value)}
               className="px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
+              aria-label="Filter by status"
             >
               <option value="all">All Status</option>
               <option value="draft">Draft</option>
@@ -114,6 +131,7 @@ const EventList: React.FC = () => {
               value={typeFilter}
               onChange={(e) => setTypeFilter(e.target.value)}
               className="px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
+              aria-label="Filter by event type"
             >
               <option value="all">All Types</option>
               <option value="in-person">In-Person</option>
@@ -124,6 +142,7 @@ const EventList: React.FC = () => {
             <button
               onClick={() => setShowFilters(!showFilters)}
               className="p-2 border border-gray-300 rounded-md hover:bg-gray-50 transition-colors"
+              aria-label="Toggle additional filters"
             >
               <Filter className="h-4 w-4" />
             </button>
@@ -132,29 +151,42 @@ const EventList: React.FC = () => {
       </div>
 
       {loading && (
-        <div className="text-center py-6 text-gray-500">Loading events...</div>
+        <div
+          className="text-center py-6 text-gray-500"
+          role="status"
+          aria-live="polite"
+        >
+          Loading events...
+        </div>
       )}
 
       {error && (
-        <div className="text-center py-6 text-red-500">Error: {error}</div>
+        <div className="text-center py-6 text-red-500" role="alert">
+          Error: {error}
+        </div>
       )}
 
       <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-6">
-        {events.map((event) => {
-          const TypeIcon = getTypeIcon(event.eventType);
+        {events.map((event: Event) => {
+          const key = event.id || event._id || event.title || Math.random();
+
+          const TypeIcon = getTypeIcon(event.eventType || "");
           const attendancePercentage =
-            (event.currentAttendees / event.maxAttendees) * 100;
+            event.maxAttendees && event.currentAttendees
+              ? (event.currentAttendees / event.maxAttendees) * 100
+              : 0;
 
           return (
             <div
-              key={event.id}
+              key={key}
               className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden hover:shadow-md transition-shadow group"
             >
               <div className="relative">
                 <img
-                  src={event.imageUrl}
+                  src={event.imageUrl || "/placeholder.png"}
                   alt={event.title}
                   className="w-full h-48 object-cover"
+                  loading="lazy"
                 />
                 <div className="absolute top-3 left-3 flex items-center space-x-2">
                   <span
@@ -166,24 +198,40 @@ const EventList: React.FC = () => {
                   </span>
                   <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-white text-gray-800">
                     <TypeIcon className="h-3 w-3 mr-1" />
-                    {event.eventType}
+                    {event.eventType }
                   </span>
                 </div>
               </div>
 
-              <div className="flex items-center justify-between px-6 ">
-                <div className="flex items-center space-x-1">
-                  <div
-                    className="w-3 h-3 rounded-full"
-                    style={{
-                      backgroundColor: event.category[0]?.color,
-                    }}
-                  />
-                  <span className="text-sm text-gray-600">
-                    {event.category[0]?.name || "No Category"}
-                  </span>
+              <div className="flex items-center justify-between px-6">
+                <div className="flex items-center space-x-1 flex-wrap">
+                  {Array.isArray(event.category) && event.category.length > 0 ? (
+                    event.category.map((cat, idx) => (
+                      <div
+                        key={cat._id ?? cat.name ?? idx}
+                        className="flex items-center space-x-1 mr-3 mb-1"
+                      >
+                        <div
+                          className="w-3 h-3 rounded-full"
+                          style={{ backgroundColor: cat.color || "#ccc" }}
+                        />
+                        <span className="text-sm text-gray-600">
+                          {cat.name || "No Category"}
+                        </span>
+                      </div>
+                    ))
+                  ) : (
+                    <div className="flex items-center space-x-1">
+                      <div className="w-3 h-3 rounded-full bg-gray-300" />
+                      <span className="text-sm text-gray-600">No Category</span>
+                    </div>
+                  )}
                 </div>
-                <span className="text-sm text-gray-500">
+                <span
+                  className="text-sm text-gray-500"
+                  title="Event visibility"
+                  aria-label="Event visibility"
+                >
                   {event.visibility === "private"
                     ? "🔒"
                     : event.visibility === "unlisted"
@@ -202,11 +250,16 @@ const EventList: React.FC = () => {
 
                 <div className="flex items-center text-sm text-gray-500 mb-2">
                   <Calendar className="h-4 w-4 mr-2" />
-                  {new Date(event.startDate).toLocaleDateString()} at{" "}
-                  {new Date(event.startDate).toLocaleTimeString([], {
-                    hour: "2-digit",
-                    minute: "2-digit",
-                  })}
+                  {event.startDate
+                    ? new Date(event.startDate).toLocaleDateString()
+                    : "TBA"}{" "}
+                  at{" "}
+                  {event.startDate
+                    ? new Date(event.startDate).toLocaleTimeString([], {
+                        hour: "2-digit",
+                        minute: "2-digit",
+                      })
+                    : "TBA"}
                 </div>
 
                 <div className="flex items-center text-sm text-gray-500 mb-2">
@@ -217,19 +270,20 @@ const EventList: React.FC = () => {
                   ) : (
                     <>
                       <MapPin className="h-4 w-4 mr-2" />
-                      {event.venue?.name}
+                      {event.venue?.name || "TBA"}
                     </>
                   )}
                 </div>
 
                 <div className="flex items-center text-sm text-gray-500 mb-2">
                   <Clock className="h-4 w-4 mr-2" />
-                  {event.timezone}
+                  {event.timezone || "UTC"}
                 </div>
 
                 <div className="flex items-center text-sm text-gray-500 mb-4">
                   <Users className="h-4 w-4 mr-2" />
-                  {event.currentAttendees}/{event.venue?.capacity} attendees
+                  {event.currentAttendees ?? 0}/
+                  {event.venue?.capacity ?? event.maxAttendees ?? 0} attendees
                   <span
                     className={`ml-2 text-xs px-2 py-0.5 rounded-full ${
                       attendancePercentage >= 80
@@ -238,17 +292,18 @@ const EventList: React.FC = () => {
                         ? "bg-yellow-100 text-yellow-800"
                         : "bg-red-100 text-red-800"
                     }`}
+                    aria-label={`${Math.round(attendancePercentage)} percent attendance`}
                   >
                     {Math.round(attendancePercentage)}%
                   </span>
                 </div>
 
                 {event.customTags && event.customTags.length > 0 && (
-                  <div className="flex flex-wrap gap-1 mb-4">
+                  <div className="flex flex-wrap gap-1 mb-4" aria-label="Custom tags">
                     <Tag className="h-4 w-4 mr-2 text-gray-400" />
                     {event.customTags.slice(0, 3).map((tag, idx) => (
                       <span
-                        key={idx}
+                        key={`${event.id}-tag-${idx}`}
                         className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-gray-100 text-gray-800"
                       >
                         {tag}
@@ -259,22 +314,40 @@ const EventList: React.FC = () => {
 
                 <div className="flex justify-between items-center">
                   <div className="flex space-x-3 text-sm text-gray-500">
-                    <div className="flex items-center">
+                    <div className="flex items-center" aria-label="Total revenue">
                       <DollarSign className="h-4 w-4" />
-                      {event.analytics?.totalRevenue?.toLocaleString() || 0}
+                      {event.analytics?.totalRevenue
+                        ? event.analytics.totalRevenue.toLocaleString()
+                        : "0"}
                     </div>
                   </div>
                   <div className="flex space-x-2">
-                    <button className="p-1 text-gray-400 hover:text-indigo-600">
+                    <button
+                      className="p-1 text-gray-400 hover:text-indigo-600"
+                      aria-label="Share event"
+                      type="button"
+                    >
                       <Share2 className="h-4 w-4" />
                     </button>
-                    <button className="p-1 text-gray-400 hover:text-gray-600">
+                    <button
+                      className="p-1 text-gray-400 hover:text-gray-600"
+                      aria-label="Copy event"
+                      type="button"
+                    >
                       <Copy className="h-4 w-4" />
                     </button>
-                    <button className="p-1 text-gray-400 hover:text-gray-600">
+                    <button
+                      className="p-1 text-gray-400 hover:text-gray-600"
+                      aria-label="Edit event"
+                      type="button"
+                    >
                       <Edit className="h-4 w-4" />
                     </button>
-                    <button className="p-1 text-gray-400 hover:text-red-600">
+                    <button
+                      className="p-1 text-gray-400 hover:text-red-600"
+                      aria-label="Archive event"
+                      type="button"
+                    >
                       <Archive className="h-4 w-4" />
                     </button>
                   </div>
@@ -285,13 +358,11 @@ const EventList: React.FC = () => {
         })}
       </div>
 
-      {events.length === 0 && !loading && (
+      {!loading && (!events || events.length === 0) && (
         <div className="text-center py-12 text-gray-500">No events found</div>
       )}
 
-      {showCreateModal && (
-        <EventCreationWizard onClose={() => setShowCreateModal(false)} />
-      )}
+      {showCreateModal && <EventCreationWizard onClose={() => setShowCreateModal(false)} />}
     </div>
   );
 };
