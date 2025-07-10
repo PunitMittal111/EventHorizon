@@ -644,66 +644,7 @@ const EventCreationWizard: React.FC<EventCreationWizardProps> = ({
           <div className="space-y-6">
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
-                Gallery Images
-              </label>
-              <div className="border-2 border-dashed border-gray-300 rounded-lg p-8 text-center hover:border-gray-400 transition-colors">
-                <input
-                  type="file"
-                  accept="image/*"
-                  multiple
-                  className="hidden"
-                  id="event-gallery-upload"
-                  onChange={async (e) => {
-                    const files = e.target.files;
-                    if (files && files.length > 0) {
-                      try {
-                        setGalleryError("");
-                        const uploadPromises = Array.from(files).map((file) =>
-                          uploadImage(file)
-                        );
-                        const uploadedUrls = await Promise.all(uploadPromises);
-                        setEventData((prev) => ({
-                          ...prev,
-                          galleryImages: uploadedUrls,
-                        }));
-                      } catch {
-                        setGalleryError(
-                          "Gallery image upload failed. Please try again."
-                        );
-                      }
-                    }
-                  }}
-                />
-                <label htmlFor="event-gallery-upload">
-                  <span className="bg-indigo-600 text-white px-4 py-2 rounded-md hover:bg-indigo-700 transition-colors cursor-pointer inline-block">
-                    Choose File(s)
-                  </span>
-                </label>
-                {/* Gallery Previews */}
-                {eventData.galleryImages &&
-                  eventData.galleryImages.length > 0 && (
-                    <div className="flex flex-wrap gap-2 mt-4 justify-center">
-                      {eventData.galleryImages.map((img, idx) => (
-                        <img
-                          key={img + idx}
-                          src={img}
-                          alt={`Gallery Preview ${idx + 1}`}
-                          className="rounded-lg max-h-24 object-contain border"
-                        />
-                      ))}
-                    </div>
-                  )}
-                {galleryError && (
-                  <div className="text-red-600 text-sm mt-2">
-                    {galleryError}
-                  </div>
-                )}
-              </div>
-            </div>
-
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Event Cover Image (optional)
+                Event Cover Image
               </label>
               <div className="border-2 border-dashed border-gray-300 rounded-lg p-8 text-center hover:border-gray-400 transition-colors">
                 <p className="text-sm text-gray-600 mb-2">
@@ -714,7 +655,7 @@ const EventCreationWizard: React.FC<EventCreationWizardProps> = ({
                 </p>
                 <input
                   type="url"
-                  placeholder="Paste image URL here (optional)"
+                  placeholder="Paste image URL here"
                   className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 mb-2"
                   value={eventData.imageUrl || ""}
                   onChange={(e) =>
