@@ -18,6 +18,7 @@ import {
 import EventCreationWizard from "./EventCreationWizard";
 import { useAppDispatch, useAppSelector } from "../../hooks/hook";
 import { getAllEvents } from "../../features/eventSlice";
+import { Event } from "../../types/index";
 const DEBOUNCE_DELAY = 300;
 
 const EventList: React.FC = () => {
@@ -203,7 +204,7 @@ const EventList: React.FC = () => {
                 </div>
               </div>
 
-              <div className="flex items-center justify-between px-6">
+              <div className="flex items-center justify-between h-1 px-6 py-8 -mb-10">
                 <div className="flex items-center space-x-1 flex-wrap">
                   {Array.isArray(event.category) &&
                   event.category.length > 0 ? (
@@ -216,8 +217,8 @@ const EventList: React.FC = () => {
                           className="w-3 h-3 rounded-full"
                           style={{ backgroundColor: cat.color || "#ccc" }}
                         />
-                        <span className="text-sm text-gray-600">
-                          {cat.name || "No Category"}
+                        <span className="text-sm pl-1 text-gray-600">
+                          {cat.name}
                         </span>
                       </div>
                     ))
@@ -302,19 +303,21 @@ const EventList: React.FC = () => {
                 </div>
 
                 {event.customTags && event.customTags.length > 0 && (
-                  <div
-                    className="flex flex-wrap gap-1 mb-4"
-                    aria-label="Custom tags"
-                  >
-                    <Tag className="h-4 w-4 mr-2 text-gray-400" />
-                    {event.customTags.slice(0, 3).map((tag, idx) => (
-                      <span
-                        key={`${event.id}-tag-${idx}`}
-                        className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-gray-100 text-gray-800"
-                      >
-                        {tag}
-                      </span>
-                    ))}
+                  <div className="flex gap-1 mb-4" aria-label="Custom tags">
+                    <div className="pt-0.5">
+                      <Tag className="h-4 w-4 text-gray-400 flex-shrink-0" />
+                    </div>
+
+                    <div className="flex flex-wrap gap-1">
+                      {event.customTags.slice(0, 3).map((tag, idx) => (
+                        <span
+                          key={`${event.id}-tag-${idx}`}
+                          className="inline-flex items-center px-0.5 py-0.5 rounded text-xs font-medium bg-gray-100 text-gray-800"
+                        >
+                          {tag}
+                        </span>
+                      ))}
+                    </div>
                   </div>
                 )}
 
