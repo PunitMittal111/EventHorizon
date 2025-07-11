@@ -1,11 +1,13 @@
-import { configureStore } from '@reduxjs/toolkit';
-import authReducer from '../features/authSlice';
-import eventReducer from '../features/eventSlice'; // ✅ Correct relative path
+import { configureStore } from "@reduxjs/toolkit";
+import authReducer from "../features/authSlice";
+import eventReducer from "../features/eventSlice";
+import ticketReducer from "../features/ticketSlice";
 
 export const store = configureStore({
   reducer: {
     auth: authReducer,
-    events: eventReducer, // ✅ Registering eventSlice reducer
+    events: eventReducer,
+    tickets: ticketReducer,
   },
 });
 
