@@ -3,13 +3,11 @@ import {
   MapPin,
   Globe,
   Users,
-  Image,
   Save,
   Eye,
   ArrowLeft,
   ArrowRight,
   Clock,
-  Camera,
   Link,
   CheckCircle,
 } from "lucide-react";
@@ -132,7 +130,7 @@ const EventCreationWizard: React.FC<EventCreationWizardProps> = ({
     { id: 2, title: "Date & Time", description: "Schedule and timezone" },
     { id: 3, title: "Location", description: "Venue or virtual details" },
     { id: 4, title: "Category & Tags", description: "Classification and SEO" },
-    { id: 5, title: "Media & Images", description: "Visual content" },
+    { id: 5, title: "Images", description: "Visual content" },
     { id: 6, title: "Settings", description: "Event configuration" },
     { id: 7, title: "Review", description: "Final review and publish" },
   ];
@@ -967,7 +965,6 @@ const EventCreationWizard: React.FC<EventCreationWizardProps> = ({
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
       <div className="bg-white rounded-xl shadow-2xl w-full max-w-4xl max-h-[90vh] overflow-hidden">
-        {/* Header */}
         <div className="px-6 py-4 border-b border-gray-200 bg-gradient-to-r from-indigo-500 to-purple-600">
           <div className="flex items-center justify-between">
             <h2 className="text-xl font-bold text-white">Create New Event</h2>
@@ -980,13 +977,12 @@ const EventCreationWizard: React.FC<EventCreationWizardProps> = ({
           </div>
         </div>
 
-        {/* Progress Steps */}
-        <div className="px-6 py-4 bg-gray-50 border-b border-gray-200">
+        <div className="px-2 py-4 bg-gray-50 border-b border-gray-200">
           <div className="flex items-center justify-between">
             {steps.map((step, index) => (
               <div key={step.id} className="flex items-center">
                 <div
-                  className={`flex items-center justify-center w-8 h-8 rounded-full text-sm font-medium ${
+                  className={`flex items-center justify-center w-7 h-7 rounded-full text-sm font-medium ${
                     currentStep >= step.id
                       ? "bg-indigo-600 text-white"
                       : "bg-gray-200 text-gray-600"
@@ -998,13 +994,10 @@ const EventCreationWizard: React.FC<EventCreationWizardProps> = ({
                   <div className="text-sm font-medium text-gray-900">
                     {step.title}
                   </div>
-                  <div className="text-xs text-gray-500">
-                    {step.description}
-                  </div>
                 </div>
                 {index < steps.length - 1 && (
                   <div
-                    className={`w-8 h-0.5 mx-4 ${
+                    className={`w-4 h-0.5 mx-4 ${
                       currentStep > step.id ? "bg-indigo-600" : "bg-gray-200"
                     }`}
                   />
@@ -1014,12 +1007,10 @@ const EventCreationWizard: React.FC<EventCreationWizardProps> = ({
           </div>
         </div>
 
-        {/* Content */}
         <div className="px-6 py-6 overflow-y-auto max-h-96">
           {renderStepContent()}
         </div>
 
-        {/* Footer */}
         <div className="px-6 py-4 border-t border-gray-200 bg-gray-50">
           <div className="flex items-center justify-between">
             <button
