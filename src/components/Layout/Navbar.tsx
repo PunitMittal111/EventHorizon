@@ -13,11 +13,29 @@ interface NavbarProps {
 
 const Navbar: React.FC<NavbarProps> = ({ onMenuToggle, isMobileMenuOpen }) => {
   const user = useSelector((state: RootState) => state.auth.user);
-  const { organization } = useAuth();
+  // Get organization from user object if available
+  const organization = user?.organization;
   const navigate = useNavigate();
   const [isProfileMenuOpen, setIsProfileMenuOpen] = useState(false);
   const profileMenuRef = useRef<HTMLDivElement>(null);
+  const [profilePhoto, setProfilePhoto] = useState<string>("");
   const dispatch = useDispatch();
+
+  useEffect(() => {
+    // Try to get photo from localStorage
+    const savedPhoto = localStorage.getItem("profilePhoto");
+    setProfilePhoto(savedPhoto || "");
+
+    // Listen for custom event to update photo
+    const updatePhoto = () => {
+      const newPhoto = localStorage.getItem("profilePhoto");
+      setProfilePhoto(newPhoto || "");
+    };
+    window.addEventListener("profilePhotoChanged", updatePhoto);
+    return () => {
+      window.removeEventListener("profilePhotoChanged", updatePhoto);
+    };
+  }, [user]);
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
@@ -83,11 +101,16 @@ const Navbar: React.FC<NavbarProps> = ({ onMenuToggle, isMobileMenuOpen }) => {
               {organization && (
                 <div className="ml-4 pl-4 border-l border-gray-200">
                   <span className="text-sm font-medium text-gray-900">
-                    {organization.name}
+                    {typeof organization === "string"
+                      ? organization
+                      : organization.name}
                   </span>
-                  <span className="ml-2 inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-indigo-100 text-indigo-800">
-                    {organization.subscriptionPlan}
-                  </span>
+                  {typeof organization === "object" &&
+                    organization.subscriptionPlan && (
+                      <span className="ml-2 inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-indigo-100 text-indigo-800">
+                        {organization.subscriptionPlan}
+                      </span>
+                    )}
                 </div>
               )}
             </div>
@@ -106,7 +129,7 @@ const Navbar: React.FC<NavbarProps> = ({ onMenuToggle, isMobileMenuOpen }) => {
                 <img
                   className="h-8 w-8 rounded-full"
                   src={
-                    user?.avatar ||
+                    profilePhoto ||
                     "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=facearea&facepad=2&w=256&h=256&q=80"
                   }
                   alt="Profile"

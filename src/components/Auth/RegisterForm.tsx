@@ -99,7 +99,7 @@ const RegisterForm: React.FC<RegisterFormProps> = ({ switchToLogin }) => {
         registerUser({
           name: formData.name,
           email: formData.email,
-          orgName: formData.organization,
+          orgName: formData.organization, // <-- use 'orgName' to match backend
           password: formData.password,
         })
       );

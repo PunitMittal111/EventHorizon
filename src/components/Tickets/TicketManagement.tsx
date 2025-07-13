@@ -12,7 +12,7 @@ import {
 import { useDispatch, useSelector } from "react-redux";
 import { AppDispatch, RootState } from "../../app/store";
 import { getAllEvents } from "../../features/eventSlice";
-import { createTicket, getAllTickets } from "../../features/ticketSlice";
+import { createTicket, getAllTickets, deleteTicket, updateTicket } from "../../features/ticketSlice";
 
 const TicketManagement: React.FC = () => {
   const dispatch = useDispatch<AppDispatch>();
@@ -41,6 +41,9 @@ const TicketManagement: React.FC = () => {
     salesStart: "",
     salesEnd: "",
   });
+
+  const [editTicketId, setEditTicketId] = useState<string | null>(null);
+  const [editFormData, setEditFormData] = useState<any>(null);
 
   useEffect(() => {
     dispatch(getAllEvents());
@@ -85,6 +88,35 @@ const TicketManagement: React.FC = () => {
       dispatch(getAllTickets());
     } catch (error) {
       console.error("Ticket creation error:", error);
+    }
+  };
+
+  const handleDeleteTicket = async (ticketId: string) => {
+    if (window.confirm("Are you sure you want to delete this ticket?")) {
+      try {
+        await dispatch(deleteTicket(ticketId)).unwrap();
+        dispatch(getAllTickets());
+      } catch (error) {
+        alert("Failed to delete ticket");
+      }
+    }
+  };
+
+  const handleEditTicket = (ticket: any) => {
+    setEditTicketId(ticket._id);
+    setEditFormData({ ...ticket });
+  };
+
+  const handleUpdateTicket = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!editTicketId) return;
+    try {
+      await dispatch(updateTicket({ ticketId: editTicketId, updateData: editFormData })).unwrap();
+      setEditTicketId(null);
+      setEditFormData(null);
+      dispatch(getAllTickets());
+    } catch (error) {
+      alert("Failed to update ticket");
     }
   };
 
@@ -224,7 +256,7 @@ const TicketManagement: React.FC = () => {
               </thead>
               <tbody className="bg-white divide-y divide-gray-200">
                 {tickets.map((ticket) => (
-                  <tr key={ticket.id} className="hover:bg-gray-50">
+                  <tr key={ticket.id || ticket._id} className="hover:bg-gray-50">
                     <td className="px-6 py-4 whitespace-nowrap">
                       <div className="flex items-center">
                         <div>
@@ -275,10 +307,10 @@ const TicketManagement: React.FC = () => {
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
                       <div className="flex items-center space-x-2">
-                        <button className="text-indigo-600 hover:text-indigo-900">
+                        <button className="text-indigo-600 hover:text-indigo-900" onClick={() => handleEditTicket(ticket)}>
                           <Edit className="h-4 w-4" />
                         </button>
-                        <button className="text-red-400 hover:text-red-600">
+                        <button className="text-red-400 hover:text-red-600" onClick={() => handleDeleteTicket(ticket._id)}>
                           <Trash2 className="h-4 w-4" />
                         </button>
                       </div>
@@ -456,6 +488,135 @@ const TicketManagement: React.FC = () => {
                   className="flex-1 px-4 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700 disabled:opacity-50"
                 >
                   {createLoading ? "Creating..." : "Create Ticket"}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* Edit Ticket Modal */}
+      {editTicketId && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white rounded-lg p-6 w-full max-w-md">
+            <h2 className="text-xl font-bold mb-4">Edit Ticket</h2>
+            <form className="space-y-4" onSubmit={handleUpdateTicket}>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Ticket Name
+                </label>
+                <input
+                  type="text"
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md"
+                  value={editFormData?.name || ""}
+                  onChange={(e) =>
+                    setEditFormData({ ...editFormData, name: e.target.value })
+                  }
+                  required
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Description
+                </label>
+                <input
+                  type="text"
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md"
+                  value={editFormData?.description || ""}
+                  onChange={(e) =>
+                    setEditFormData({ ...editFormData, description: e.target.value })
+                  }
+                />
+              </div>
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Price ($)
+                  </label>
+                  <input
+                    type="number"
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md"
+                    value={editFormData?.price || ""}
+                    onChange={(e) =>
+                      setEditFormData({ ...editFormData, price: e.target.value })
+                    }
+                    required
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Quantity
+                  </label>
+                  <input
+                    type="number"
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md"
+                    value={editFormData?.quantity || ""}
+                    onChange={(e) =>
+                      setEditFormData({ ...editFormData, quantity: e.target.value })
+                    }
+                    required
+                  />
+                </div>
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Ticket Type
+                </label>
+                <select
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md"
+                  value={editFormData?.type || "paid"}
+                  onChange={(e) =>
+                    setEditFormData({ ...editFormData, type: e.target.value })
+                  }
+                >
+                  <option value="free">Free</option>
+                  <option value="paid">Paid</option>
+                  <option value="VIP">VIP</option>
+                </select>
+              </div>
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Sales Start
+                  </label>
+                  <input
+                    type="date"
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md"
+                    value={editFormData?.salesStart?.slice(0, 10) || ""}
+                    onChange={(e) =>
+                      setEditFormData({ ...editFormData, salesStart: e.target.value })
+                    }
+                    required
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Sales End
+                  </label>
+                  <input
+                    type="date"
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md"
+                    value={editFormData?.salesEnd?.slice(0, 10) || ""}
+                    onChange={(e) =>
+                      setEditFormData({ ...editFormData, salesEnd: e.target.value })
+                    }
+                    required
+                  />
+                </div>
+              </div>
+              <div className="flex space-x-3 pt-4">
+                <button
+                  type="button"
+                  onClick={() => { setEditTicketId(null); setEditFormData(null); }}
+                  className="flex-1 px-4 py-2 border border-gray-300 rounded-md text-gray-700 hover:bg-gray-50"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  className="flex-1 px-4 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700"
+                >
+                  Update Ticket
                 </button>
               </div>
             </form>

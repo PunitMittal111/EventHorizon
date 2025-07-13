@@ -77,6 +77,55 @@ export const getAllTickets = createAsyncThunk(
   }
 );
 
+export const deleteTicket = createAsyncThunk(
+  "tickets/deleteTicket",
+  async (ticketId: string, { rejectWithValue }) => {
+    try {
+      const token = localStorage.getItem("token");
+      await axios.delete(`${API_URL}/api/tickets/${ticketId}`, {
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+      });
+      return ticketId;
+    } catch (error: any) {
+      console.log("Delete ticket error:", error);
+      return rejectWithValue(
+        error.response?.data?.message || "Failed to delete ticket"
+      );
+    }
+  }
+);
+
+export const updateTicket = createAsyncThunk(
+  "tickets/updateTicket",
+  async (
+    { ticketId, updateData }: { ticketId: string; updateData: Partial<Ticket> },
+    { rejectWithValue }
+  ) => {
+    try {
+      const token = localStorage.getItem("token");
+      const response = await axios.put(
+        `${API_URL}/api/tickets/${ticketId}`,
+        updateData,
+        {
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+      return response.data as Ticket;
+    } catch (error: any) {
+      console.log("Update ticket error:", error);
+      return rejectWithValue(
+        error.response?.data?.message || "Failed to update ticket"
+      );
+    }
+  }
+);
+
 const ticketSlice = createSlice({
   name: "tickets",
   initialState,
@@ -119,6 +168,14 @@ const ticketSlice = createSlice({
       .addCase(getAllTickets.rejected, (state, action) => {
         state.loading = false;
         state.error = action.payload as string;
+      })
+      .addCase(deleteTicket.fulfilled, (state, action: PayloadAction<string>) => {
+        state.tickets = state.tickets.filter(ticket => ticket._id !== action.payload);
+      })
+      .addCase(updateTicket.fulfilled, (state, action: PayloadAction<Ticket>) => {
+        state.tickets = state.tickets.map(ticket =>
+          ticket._id === action.payload._id ? action.payload : ticket
+        );
       });
   },
 });
