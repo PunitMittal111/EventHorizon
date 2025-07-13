@@ -5,7 +5,8 @@ interface User {
   id: string;
   name: string;
   email: string;
-  organization: string;
+  orgName?: string;
+  profilePhoto?: string; // Add profilePhoto to User interface
 }
 
 interface AuthState {
@@ -19,7 +20,8 @@ interface AuthState {
 interface RegisterPayload {
   name: string;
   email: string;
-  organization: string;
+  orgName: string;
+  password: string;
 }
 
 interface RegisterResponse {
@@ -41,10 +43,12 @@ interface UpdateUserPayload {
   id?: string;
   name?: string;
   email?: string;
-  organization?: string;
+  orgName?: string;
+  profilePhoto?: string;
 }
 
 interface UpdateUserResponse {
+  success: boolean;
   user: User;
 }
 
@@ -153,6 +157,14 @@ const authSlice = createSlice({
       localStorage.removeItem("token");
       localStorage.removeItem("user");
       localStorage.removeItem("isAuth");
+      localStorage.removeItem("profilePhoto"); // Also remove profile photo
+    },
+    // Add a reducer to update user data directly
+    updateUserData: (state, action: PayloadAction<Partial<User>>) => {
+      if (state.user) {
+        state.user = { ...state.user, ...action.payload };
+        localStorage.setItem("user", JSON.stringify(state.user));
+      }
     },
   },
   extraReducers: (builder) => {
@@ -208,7 +220,9 @@ const authSlice = createSlice({
           console.log("Update success payload:", action.payload);
           state.loading = false;
           state.user = action.payload.user;
+          // Update localStorage with the complete user data
           localStorage.setItem("user", JSON.stringify(action.payload.user));
+          // No need to separately store profilePhoto since it's part of user data
         }
       )
       .addCase(updateUser.rejected, (state, action) => {
@@ -223,6 +237,7 @@ const authSlice = createSlice({
       .addCase(getUserById.fulfilled, (state, action: PayloadAction<User>) => {
         state.loading = false;
         state.user = action.payload;
+        localStorage.setItem("user", JSON.stringify(action.payload));
       })
       .addCase(getUserById.rejected, (state, action) => {
         state.loading = false;
@@ -231,5 +246,5 @@ const authSlice = createSlice({
   },
 });
 
-export const { logout } = authSlice.actions;
+export const { logout, updateUserData } = authSlice.actions;
 export default authSlice.reducer;

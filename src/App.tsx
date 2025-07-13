@@ -6,6 +6,7 @@ import Navbar from "./components/Layout/Navbar";
 import Sidebar from "./components/Layout/Sidebar";
 import LoginForm from "./components/Auth/LoginForm";
 import RegisterForm from "./components/Auth/RegisterForm";
+import ProfilePage from "./components/Profile/ProfilePage";
 
 const DashboardPage = React.lazy(
   () => import("./components/Dashboard/DashboardOverview")
@@ -36,7 +37,6 @@ function AppContent() {
             <Routes>
               <Route path="/" element={<LoginForm />} />
               <Route path="/register" element={<RegisterForm />} />
-
               <Route
                 path="/dashboard"
                 element={
@@ -58,6 +58,14 @@ function AppContent() {
                 element={
                   <ProtectedRoute>
                     <TicketManagementPage />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/profile"
+                element={
+                  <ProtectedRoute>
+                    <ProfilePage />
                   </ProtectedRoute>
                 }
               />
