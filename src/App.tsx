@@ -15,6 +15,7 @@ const EventListPage = React.lazy(() => import("./components/Events/EventList"));
 const TicketManagementPage = React.lazy(
   () => import("./components/Tickets/TicketManagement")
 );
+const Billing = React.lazy(() => import("./components/Billing/Subscription"));
 
 function AppContent() {
   const location = useLocation();
@@ -66,6 +67,14 @@ function AppContent() {
                 element={
                   <ProtectedRoute>
                     <ProfilePage />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/Billing"
+                element={
+                  <ProtectedRoute>
+                    <Billing />
                   </ProtectedRoute>
                 }
               />
